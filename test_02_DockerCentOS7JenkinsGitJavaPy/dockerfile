@@ -1,0 +1,91 @@
+﻿# Install the base requirements for the app.
+FROM centos:7
+ENV container docker
+WORKDIR /var/jenkins_home
+MAINTAINER userfulJoe <joe.spurway@userful.com>
+LABEL Remarks="This is a Dockerfile for CentOS-8 running a Jenkins Testing Platform"
+
+USER root
+
+# Helps with package install
+RUN yum -y update && yum -y upgrade
+RUN yum -y install epel-release
+RUN yum install -y yum-utils  
+RUN yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+	
+# Install the latest network [nginx], Git, Java [amazoncorretto], Python [py3], Docker and Docker-compose binaries
+RUN (cd /lib/systemd/system/sysinit.target.wants/; \
+     for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+    rm -f /lib/systemd/system/multi-user.target.wants/*; \
+    rm -f /etc/systemd/system/*.wants/*; \
+    rm -f /lib/systemd/system/local-fs.target.wants/*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+    rm -f /lib/systemd/system/basic.target.wants/*; \
+    rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+EXPOSE 8080
+RUN yum install -y java wget initscripts && \
+    cd /etc/yum.repos.d && \
+    wget http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo && \
+    rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key && \
+    yum install -y jenkins && \
+    systemctl enable jenkins
+CMD ["/sbin/init"]
+
+#RUN dnf -y update
+#RUN dnf -y install wget
+#RUN dnf -y install java-1.8.0-openjdk
+#RUN dnf -y install net-tools
+#RUN dnf -y install tcpdump
+#RUN dnf -y install docker
+#RUN dnf -y install git
+#RUN dnf -y install gem
+#
+#RUN wget -O /etc/yum.repos.d/jenkins.repo \
+#    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+#RUN rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+#RUN dnf -y upgrade
+#RUN dnf repolist | grep jenkins
+#RUN dnf -y install jenkins
+#
+#
+#ENV JENKINS_HOME /opt/jenkins/data
+#ENV JENKINS_MIRROR http://mirrors.jenkins-ci.org
+#
+#RUN mkdir -p $JENKINS_HOME/plugins
+#RUN curl -sf -o /opt/jenkins/jenkins.war -L $JENKINS_MIRROR/war-stable/latest/jenkins.war
+#
+#RUN for plugin in git-client git ws-cleanup ;\
+#    do curl -sf -o $JENKINS_HOME/plugins/${plugin}.hpi \
+#       -L $JENKINS_MIRROR/plugins/${plugin}/latest/${plugin}.hpi ; done
+#
+#ADD ./dockerjenkins.sh /usr/local/bin/dockerjenkins.sh
+#RUN chmod +x /usr/local/bin/dockerjenkins.sh
+#
+#VOLUME /var/lib/docker
+#
+#EXPOSE 8080
+#
+#ENTRYPOINT [ "/usr/local/bin/dockerjenkins.sh" ]
+#
+#USER jenkins
+
+
+
+
+#RUN dnf -y install systemd
+#RUN yum -y update && yum -y clean all && rm -rf /var/cache 
+
+#RUN yum -y install git 
+#RUN yum -y install python3 
+#RUN yum -y install python3-pip
+#RUN yum -y install java-1.8.0-openjdk-devel
+#RUN yum -y install java-11-openjdk
+#RUN yum -y install nginx 
+#RUN dnf -y install wget
+#RUN yum -y install docker-compose
+#RUN curl -L "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#RUN chmod +x /usr/local/bin/docker-compose
+#RUN wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo
+#RUN rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key

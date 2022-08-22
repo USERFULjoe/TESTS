@@ -1,0 +1,32 @@
+﻿# Install the base requirements for the app.
+# OS : CENTOS stream8
+# NET: nginx
+# TFP: wget, git, distro-sync, open-ssh
+# DB : my-SQL, post-gres
+# IDE: vim, gnome-shell 
+# LNG: Java, Py3, C, C++, Perl, PHP
+
+FROM quay.io/centos/centos:stream8
+ENV container docker
+WORKDIR /var/jenkins_home
+MAINTAINER userfulJoe <joe.spurway@userful.com>
+LABEL Remarks="This is a Dockerfile for CentOS-Stream8 running a Jenkins Testing Platform"
+
+USER root
+RUN dnf -y update && dnf -y upgrade
+RUN dnf -y install nginx
+RUN dnf -y install wget
+RUN wget 'http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages/centos-gpg-keys-8-3.el8.noarch.rpm'
+#RUN rpm -i 'centos-gpg-keys-8-3.el8.noarch.rpm'
+RUN dnf -y distro-sync
+RUN dnf -y install git
+RUN git clone https://gitlab.gnome.org/GNOME/gnome-shell.git
+RUN dnf -y install python3
+EXPOSE 8080
+RUN dnf install -y java wget initscripts && \
+    cd /etc/yum.repos.d && \
+    wget http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo && \
+    rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key && \
+    dnf install -y jenkins && \
+    systemctl enable jenkins
+CMD ["/sbin/init"]
